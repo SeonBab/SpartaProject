@@ -48,14 +48,14 @@ AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
     return SpawnActor;
 }
 
-FItemSpawnRow* ASpawnVolume::GetRandomItem() const
+FItemSpawnRow* ASpawnVolume::GetRandomItem(const UDataTable* ItemSpawnDataTable) const
 {
-    if (!ItemDataTable) return nullptr;
+    if (!ItemSpawnDataTable) return nullptr;
 
     // 모든 Row(행) 가져오기
     TArray<FItemSpawnRow*> AllRows;
     static const FString ContextString(TEXT("ItemSpawnContext"));
-    ItemDataTable->GetAllRows(ContextString, AllRows);
+    ItemSpawnDataTable->GetAllRows(ContextString, AllRows);
 
     if (AllRows.IsEmpty()) return nullptr;
 
@@ -88,9 +88,9 @@ FItemSpawnRow* ASpawnVolume::GetRandomItem() const
     return nullptr;
 }
 
-AActor* ASpawnVolume::SpawnRandomItem()
+AActor* ASpawnVolume::SpawnRandomItem(const UDataTable* ItemSpawnDataTable)
 {
-    if (FItemSpawnRow* SelectedRow = GetRandomItem())
+    if (FItemSpawnRow* SelectedRow = GetRandomItem(ItemSpawnDataTable))
     {
         if (UClass* ActualClass = SelectedRow->ItemClass.Get())
         {

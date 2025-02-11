@@ -75,14 +75,18 @@ void ASpartaGameState::WaveCheck()
 
 	if (!WaveDataTable) return;
 
+	// TODO
+	// 데이터 테이블에서 웨이브에 대한 정보를 가져옵니다.  
+	// 현재 웨이브에 대한 정보가 있는 경우 웨이브 시작을 호출합니다.
+	// 현재 웨이브에 대한 정보가 없는 경우 게임 오버를 호출합니다.
+
 	++CurrentWaveIndex;
 
-	// 데이터 테이블에서 현재 웨이브에 대한 정보 Row(행)을 가져옵니다.
+	//현재 웨이브의 Row(행) 가져오기
 	FWaveRow* CurRows;
 	static const FString ContextString(TEXT("WaveContext"));
 	CurRows = WaveDataTable->FindRow<FWaveRow>(FName(*FString::FromInt(CurrentWaveIndex)), ContextString);
 	
-	// 현재 웨이브에 대한 정보가 있는 경우 웨이브 시작을 호출합니다.
 	if (CurRows)
 	{
 		//현재 웨이브에 스폰해야하는 아이템의 개수를 가져와야함
@@ -93,7 +97,6 @@ void ASpartaGameState::WaveCheck()
 		// 특정 시간 후에 WaveCheck()가 호출되도록 타이머 설정
 		GetWorldTimerManager().SetTimer(WavelTimerHandle, this, &ASpartaGameState::WaveCheck, LevelDuration, false);
 	}
-	// 현재 웨이브에 대한 정보가 없는 경우 게임 오버를 호출합니다.
 	else
 	{
 		// 타이머 해제

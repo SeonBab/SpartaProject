@@ -26,10 +26,10 @@ public:
 	AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
 
 	// 스폰 해야하는 아이템 클래스를 선택하는 함수
-	FItemSpawnRow* GetRandomItem() const;
+	FItemSpawnRow* GetRandomItem(const UDataTable* SelectedRow) const;
 	// 랜덤으로 아이템 클래스를 스폰을 하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	AActor* SpawnRandomItem();
+	AActor* SpawnRandomItem(const UDataTable* SelectedRow);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
@@ -37,7 +37,4 @@ protected:
 	// 스폰 영역을 담당할 박스 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	UBoxComponent* SpawningBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-	UDataTable* ItemDataTable;
 };
