@@ -39,6 +39,20 @@ FVector ASpawnVolume::GetRandomPointInVolume() const
     return Pointlocation;
 }
 
+FVector ASpawnVolume::GetRandomXYPointInVolume() const
+{
+    // 1) 박스 컴포넌트의 스케일된 Extent, 즉 x/y/z 방향으로 반지름(절반 길이)을 구함
+    FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
+    FVector BoxOrigin = SpawningBox->GetComponentLocation();
+
+    FVector Pointlocation = BoxOrigin + FVector(
+        FMath::FRandRange(-BoxExtent.X, BoxExtent.X),
+        FMath::FRandRange(-BoxExtent.Y, BoxExtent.Y),
+        -BoxExtent.Z);
+
+    return Pointlocation;
+}
+
 AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
 {
     if (!ItemClass) return nullptr;
@@ -48,14 +62,25 @@ AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
     return SpawnActor;
 }
 
-FItemSpawnRow* ASpawnVolume::GetRandomItem(const UDataTable* ItemSpawnDataTable) const
+AActor* ASpawnVolume::SpawnObstacle(TSubclassOf<AActor> ItemClass)
 {
-    if (!ItemSpawnDataTable) return nullptr;
+    if (!ItemClass) return nullptr;
+
+    FActorSpawnParameters ActorSpawnParameters;
+    ActorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    AActor* SpawnActor = GetWorld()->SpawnActor<AActor>(ItemClass, GetRandomXYPointInVolume(), FRotator::ZeroRotator, ActorSpawnParameters);
+
+    return SpawnActor;
+}
+
+FItemSpawnRow* ASpawnVolume::GetRandomItem(const UDataTable* SelectedRow) const
+{
+    if (!SelectedRow) return nullptr;
 
     // 모든 Row(행) 가져오기
+    const FString ContextString(TEXT("ItemSpawnContext"));
     TArray<FItemSpawnRow*> AllRows;
-    static const FString ContextString(TEXT("ItemSpawnContext"));
-    ItemSpawnDataTable->GetAllRows(ContextString, AllRows);
+    SelectedRow->GetAllRows(ContextString, AllRows);
 
     if (AllRows.IsEmpty()) return nullptr;
 
@@ -88,6 +113,46 @@ FItemSpawnRow* ASpawnVolume::GetRandomItem(const UDataTable* ItemSpawnDataTable)
     return nullptr;
 }
 
+FObstacleSpawnRow* ASpawnVolume::GetRandomObstacle(const UDataTable* SelectedRow) const
+{
+    if (!SelectedRow) return nullptr;
+
+    // 모든 Row(행) 가져오기
+    const FString ContextString(TEXT("ObstacleSpawnContext"));
+    TArray<FObstacleSpawnRow*> AllRows;
+    SelectedRow->GetAllRows(ContextString, AllRows);
+
+    if (AllRows.IsEmpty()) return nullptr;
+
+    // 전체 확률 합 구하기
+    float TotalChance = 0.0f;
+    for (const FObstacleSpawnRow* Row : AllRows)
+    {
+        // Row가 유효한 경우
+        if (Row)
+        {
+            TotalChance += Row->SpawnChance; // SpawnChance 값을 TotalChance에 더하기
+        }
+    }
+
+    // 0 ~ TotalChance 사이 랜덤 값
+    const float RandValue = FMath::FRandRange(0.0f, TotalChance);
+    float AccumulateChance = 0.0f;
+
+    // 누적 확률로 아이템 선택
+
+    for (FObstacleSpawnRow* Row : AllRows)
+    {
+        AccumulateChance += Row->SpawnChance;
+        if (RandValue <= AccumulateChance)
+        {
+            return Row;
+        }
+    }
+
+    return nullptr;
+}
+
 AActor* ASpawnVolume::SpawnRandomItem(const UDataTable* ItemSpawnDataTable)
 {
     if (FItemSpawnRow* SelectedRow = GetRandomItem(ItemSpawnDataTable))
@@ -95,6 +160,19 @@ AActor* ASpawnVolume::SpawnRandomItem(const UDataTable* ItemSpawnDataTable)
         if (UClass* ActualClass = SelectedRow->ItemClass.Get())
         {
             return SpawnItem(ActualClass);
+        }
+    }
+
+    return nullptr;
+}
+
+AActor* ASpawnVolume::SpawnRandomObstacle(const UDataTable* ObstacleSpawnDataTable)
+{
+    if (FObstacleSpawnRow* SelectedRow = GetRandomObstacle(ObstacleSpawnDataTable))
+    {
+        if (UClass* ActualClass = SelectedRow->ObstacleClass.Get())
+        {
+            return SpawnObstacle(ActualClass);
         }
     }
 

@@ -10,6 +10,7 @@
 #include "Components/TextBlock.h"
 #include "SpartaGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ASpartaPlayerController::ASpartaPlayerController()
 {
@@ -131,6 +132,18 @@ void ASpartaPlayerController::ShowMainMenu(bool bIsRestart)
             }
         }
 
+        if (UTextBlock* ButtonText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName(TEXT("EndButtonText"))))
+        {
+            if (bIsRestart)
+            {
+                ButtonText->SetText(FText::FromString(TEXT("MainMenu")));
+            }
+            else
+            {
+                ButtonText->SetText(FText::FromString(TEXT("Exit")));
+            }
+        }
+
         if (bIsRestart)
         {
             UFunction* PlayAnimFunc = MainMenuWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
@@ -159,4 +172,19 @@ void ASpartaPlayerController::StartGame()
 
     UGameplayStatics::OpenLevel(GetWorld(), FName("BasicLevel"));
     SetPause(false);
+}
+
+void ASpartaPlayerController::EndGame()
+{
+    FName GameplayLevel("BasicLevel");
+    if (UGameplayStatics::GetCurrentLevelName(this) == GameplayLevel)
+    {
+        UGameplayStatics::OpenLevel(GetWorld(), FName("MenuLevel"));
+    }
+    else
+    {
+        UKismetSystemLibrary::QuitGame(GetWorld(), this, EQuitPreference::Quit, false);
+    }
+
+    SetPause(true);
 }

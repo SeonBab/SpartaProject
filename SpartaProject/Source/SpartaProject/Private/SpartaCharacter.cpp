@@ -12,7 +12,7 @@
 #include "SpartaPlayerController.h"
 #include "SpartaGameState.h"
 #include "Components/WidgetComponent.h"
-#include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 ASpartaCharacter::ASpartaCharacter()
 {
@@ -42,6 +42,8 @@ ASpartaCharacter::ASpartaCharacter()
     SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
+    bIsReverseMoveInput = false;
+
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
     // 초기 체력 설정
@@ -59,6 +61,31 @@ void ASpartaCharacter::AddHealth(float Amount)
     Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
 
     UpdateOverheadHP();
+}
+
+int32 ASpartaCharacter::GetMaxHealth() const
+{
+    return MaxHealth;
+}
+
+void ASpartaCharacter::AddSlowSpeed(float SlowSpeed)
+{
+    GetCharacterMovement()->MaxWalkSpeed *= SlowSpeed;
+    NormalSpeed *= SlowSpeed;
+    SprintSpeed *= SlowSpeed;
+}
+
+void ASpartaCharacter::RemoveSlowSpeed(float SlowSpeed)
+{
+    float Reciprocal = 1.f / SlowSpeed;
+    GetCharacterMovement()->MaxWalkSpeed *= Reciprocal;
+    NormalSpeed *= Reciprocal;
+    SprintSpeed *= Reciprocal;
+}
+
+void ASpartaCharacter::SetIsReverseMoveInput(bool NewbIsReverseMoveInput)
+{
+    bIsReverseMoveInput = NewbIsReverseMoveInput;
 }
 
 void ASpartaCharacter::BeginPlay()
@@ -121,14 +148,16 @@ void ASpartaCharacter::Move(const FInputActionValue& Value)
 
     if (MoveInput.X != 0.f)
     {
+        float XValue = (bIsReverseMoveInput) ? MoveInput.X * -1 : MoveInput.X;
         // 캐릭터가 바라보는 방향(정면)으로 X축 이동
-        AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        AddMovementInput(GetActorForwardVector(), XValue);
     }
 
     if (MoveInput.Y != 0.f)
     {
+        float YValue = (bIsReverseMoveInput) ? MoveInput.Y * -1 : MoveInput.Y;
         // 캐릭터의 오른쪽 방향으로 Y축 이동
-        AddMovementInput(GetActorRightVector(), MoveInput.Y);
+        AddMovementInput(GetActorRightVector(), YValue);
     }
 }
 
@@ -213,9 +242,10 @@ void ASpartaCharacter::UpdateOverheadHP()
     UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject();
     if (OverheadWidgetInstance)
     {
-        if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverheadHP"))))
+        if (UImage* CurHPImage = Cast<UImage>(OverheadWidgetInstance->GetWidgetFromName(TEXT("CurHP"))))
         {
-            HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
+            FVector2D HPImageScale(Health / MaxHealth, 1.f);
+            CurHPImage->SetRenderScale(HPImageScale);
         }
     }
 }

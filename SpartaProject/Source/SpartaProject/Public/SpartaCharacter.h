@@ -27,6 +27,16 @@ public:
 	// 체력을 회복시키는 함수
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void AddHealth(float Amount);
+	// 최대 체력을 가져오는 함수
+	UFUNCTION(BlueprintPure, Category = "Health")
+	int32 GetMaxHealth() const;
+
+	// 슬로우 효과 적용
+	void AddSlowSpeed(float SlowSpeed);
+	void RemoveSlowSpeed(float SlowSpeed);
+
+	// 입력 반전 효과 적용
+	void SetIsReverseMoveInput(bool NewbIsReverseMoveInput);
 
 protected:
 	virtual void BeginPlay() override;
@@ -70,12 +80,18 @@ protected:
 	UWidgetComponent* OverheadWidget;
 
 	// 이동 속도 관련 프로퍼티들
+	// 기본 걷기 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float NormalSpeed; // 기본 걷기 속도
+	float NormalSpeed;
+	// 기본 걷기 속도 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float SprintSpeedMultiplier;  // 기본 걷기 속도 대비 몇 배로 빠르게 달릴지 결정
+	float SprintSpeedMultiplier;
+	// 실제 달리기 속도
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeed; 	// 실제 달리기 속도
+	float SprintSpeed;
+
+	// 입력 반전
+	bool bIsReverseMoveInput;
 
 	// 최대 체력
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
@@ -83,6 +99,4 @@ protected:
 	// 현재 체력
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float Health;
-
-
 };

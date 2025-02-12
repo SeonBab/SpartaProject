@@ -1,46 +1,61 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MineItem.h"
+#include "ExplosionObstacle.h"
 #include "Components/SphereComponent.h"
+#include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
-AMineItem::AMineItem()
+AExplosionObstacle::AExplosionObstacle()
 {
-	ExplosionDelay = 5.0f;
-	ExplosionRadius = 300.0f;
-	ExplosionDamage = 30.0f;
-	ItemType = "Mine";
+	PrimaryActorTick.bCanEverTick = true;
+
+	ExplosionDelay = 3.f;
+	ExplosionRadius = 150.0f;
+	ExplosionDamage = 10.0f;
+	ExplosionDecalSize = 135.f;
 
 	ExplosionCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ExplosionCollision"));
 	ExplosionCollision->InitSphereRadius(ExplosionRadius);
 	ExplosionCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	ExplosionCollision->SetupAttachment(Scene);
 
-	Collision->InitSphereRadius(200.f);
-
-	bHasExploded = false;
+	ExplosionDecal = CreateDefaultSubobject<UDecalComponent>(TEXT("ExplosionDecal"));
+	ExplosionDecal->SetupAttachment(ExplosionCollision);
+	ExplosionDecal->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+	ExplosionDecal->DecalSize = FVector(512.f, ExplosionDecalSize, ExplosionDecalSize);
 }
 
-void AMineItem::ActivateItem(AActor* Activator)
+void AExplosionObstacle::BeginPlay()
 {
-	// 지연 시간 후 폭발
-	// 폭발 이펙트, 데미지 계산 등을 추가할 수 있음
+	Super::BeginPlay();
+}
 
-	if (bHasExploded)
+void AExplosionObstacle::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// 3초동안 ExplosionDecalSize로 커진다.
+	float NewDecalSize = (ExplosionDecalSize / ExplosionDelay) * DeltaTime;
+
+	// 만약 그려져야할 데칼 크기보다 커졌다면 0으로 초기화 후 폭발로직 실행
+	FVector CurDecalSize = ExplosionDecal->DecalSize;
+	CurDecalSize.Y += NewDecalSize;
+	CurDecalSize.Z += NewDecalSize;
+
+	if (CurDecalSize.Y > ExplosionDecalSize)
 	{
-		return;
+		CurDecalSize.Y = 0;
+		CurDecalSize.Z = 0;
+		Explode();
 	}
 
-	Super::ActivateItem(Activator);
-
-	GetWorld()->GetTimerManager().SetTimer(ExplosionTimerHandle, this, &AMineItem::Explode, ExplosionDelay);
-
-	bHasExploded = true;
+	ExplosionDecal->DecalSize = CurDecalSize;
+	ExplosionDecal->MarkRenderStateDirty();
 }
 
-void AMineItem::Explode()
+void AExplosionObstacle::Explode()
 {
 	UParticleSystemComponent* Particle = nullptr;
 
@@ -86,7 +101,4 @@ void AMineItem::Explode()
 			false
 		);
 	}
-
-	// 폭발 이후 지뢰 아이템 파괴
-	DestroyItem();
 }

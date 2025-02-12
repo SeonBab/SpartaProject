@@ -32,6 +32,9 @@ public:
 	// 게임 시작
 	UFUNCTION(BlueprintCallable, Category = "Menu")
 	void StartGame();
+	// 게임 종료
+	UFUNCTION(BlueprintCallable, Category = "Menu")
+	void EndGame();
 
 	// 에디터에서 세팅할 IMC
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")

@@ -4,23 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "WaveRow.generated.h"
+#include "ObstacleSpawnRow.generated.h"
+
 
 USTRUCT(BlueprintType)
-struct FWaveRow : public FTableRowBase
+struct FObstacleSpawnRow : public FTableRowBase
 {
 	GENERATED_BODY()
-
 public:
+	// 장애물 이름
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UDataTable* ItemSpawnDataTable;
-
+	FName ObstacleName;
+	// 어떤 장애물 클래스를 스폰할지
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 TotalItemSpawn;
-
+	TSubclassOf<AActor> ObstacleClass;
+	// 장애물의 스폰 확률
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UDataTable* ObstacleSpawnDataTable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 TotalObstacleSpawn;
+	float SpawnChance;
 };

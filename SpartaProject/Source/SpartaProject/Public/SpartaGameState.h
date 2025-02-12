@@ -34,7 +34,9 @@ public:
 	void WaveCheck();
 
 	// 아이템 스폰 및 타이머 설정
-	void StartWave(const int32 ItemToSpawn, const UDataTable* ItemSpawnDataTable);
+	void StartWaveSpawnItem(const int32 ItemToSpawn, const UDataTable* ItemSpawnDataTable);
+
+	void StartWaveSpawnObstacle(const int32 ObstacleToSpawn, const UDataTable* ObstacleSpawnDataTable);
 
 	void UpdateHUD();
 
