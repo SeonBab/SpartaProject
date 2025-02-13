@@ -17,7 +17,7 @@ ASpartaGameState::ASpartaGameState()
 {
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
-	LevelDuration = 10.0f; // 한 레벨당 30초
+	LevelDuration = 15.0f; // 한 레벨당 15초
 	CurrentWaveIndex = 0;
 }
 
