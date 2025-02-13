@@ -20,6 +20,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	// IItemInterface에서 요구하는 함수들을 반드시 구현
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -45,4 +47,7 @@ protected:
 	UParticleSystem* PickupParticle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	USoundBase* PickupSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Properties")
+	float RotationSpeed;
 };

@@ -10,7 +10,7 @@
 ABaseItem::ABaseItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
     // 루트 컴포넌트 생성 및 설정
     Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
@@ -32,6 +32,9 @@ ABaseItem::ABaseItem()
     // Overlap 이벤트 바인딩
     Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::OnBeginOverlap);
     Collision->OnComponentEndOverlap.AddDynamic(this, &ABaseItem::OnEndOverlap);
+
+    // 기본 회전 속도 (1초에 90도 회전)
+    RotationSpeed = 90.f;
 }
 
 // Called when the game starts or when spawned
@@ -39,6 +42,14 @@ void ABaseItem::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ABaseItem::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // 초당 RotationSpeed만큼, 한 프레임당 (RotationSpeed * DeltaTime)만큼 회전
+    AddActorLocalRotation(FRotator(0.f, RotationSpeed * DeltaTime, 0.f));
 }
 
 void ABaseItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
